@@ -1,0 +1,38 @@
+<launch>
+
+  <!-- Run the map server -->
+   
+  <include file="$(find ucar_controller)/launch/base_driver.launch" > </include>
+
+  <include file="$(find ydlidar_ros_driver)/launch/ydlidar.launch" > </include>
+
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find ucar_nav)/maps/map.yaml" output="screen">
+   <param name="frame_id" value="map" />
+  </node> 
+
+  <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
+    <param name="video_device" value="/dev/video0" />
+    <param name="image_width" value="640" />
+    <param name="image_height" value="480" />
+    <param name="pixel_format" value="yuyv" />
+    <param name="camera_frame_id" value="usb_cam" />
+    <param name="io_method" value="mmap"/>
+  </node>
+
+ <!-- <param name="base_global_planner" value="voronoi_planner/VoronoiPlanner"/>  -->
+
+  <include file="$(find ucar_nav)/launch/config/amcl/amcl_omni.launch" > </include>
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <param name="base_global_planner" value="global_planner/GlobalPlanner"/>
+    <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
+    <rosparam file="$(find ucar_nav)/launch/config/move_base/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find ucar_nav)/launch/config/move_base/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find ucar_nav)/launch/config/move_base/global_planner_params.yaml" command="load" />
+    <rosparam file="$(find ucar_nav)/launch/config/move_base/teb_local_planner_params.yaml" command="load" />
+    <rosparam file="$(find ucar_nav)/launch/config/move_base/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find ucar_nav)/launch/config/move_base/global_costmap_params.yaml" command="load" />
+  </node>
+
+  <!-- rosparam command="load" file="$(find ucar_nav)/launch/config/move_base/my_navigation.yaml"/ -->
+  
+</launch>

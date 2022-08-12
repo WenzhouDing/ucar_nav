@@ -1,0 +1,61 @@
+<launch>
+  <!-- Arguments -->
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+
+  <!-- gazebo -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find ucar_sim)/world/arena-3.world"/> 
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
+  </include>
+
+  <!-- Load the URDF into the ROS Parameter Server -->
+  <arg name="model_file" default="$(find ucar_sim)/urdf/waking_robot.xacro" />
+ 
+  <param name="robot_description" command="$(find xacro)/xacro  --inorder $(arg model_file)" />
+ 
+  <!-- Run a python script to send a service call the gazebo_ros to spawn a URDF robot -->
+  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+	args="-urdf -model robot -param robot_description -x -0.05 -y -0.1 -z 0.05"/> 
+
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+
+<!-- ================================================================================================= -->
+
+  <!-- Arguments -->
+  <arg name="model" default="robot"/>
+  <arg name="open_rviz" default="true"/>
+  <arg name="move_forward_only" default="false"/>
+  <arg name="local_planner_method" default="dwa" doc="teb"/>
+
+  <!-- 加载模型 -->
+  <arg name="urdf_file" default="$(find xacro)/xacro --inorder '$(find ucar_sim)/urdf/waking_robot.xacro'" />
+   
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find ucar_nav)/maps/map.yaml" output="screen">
+   <param name="frame_id" value="map" />
+  </node> 
+
+
+  <include file="$(find ucar_nav)/launch/config/amcl/amcl_omni.launch" > </include>
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <param name="base_global_planner" value="global_planner/GlobalPlanner"/>
+    <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
+    <rosparam file="$(find ucar_nav)/launch/config/move_base/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find ucar_nav)/launch/config/move_base/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find ucar_nav)/launch/config/move_base/global_planner_params.yaml" command="load" />
+    <rosparam file="$(find ucar_nav)/launch/config/move_base/teb_local_planner_params.yaml" command="load" />
+    <rosparam file="$(find ucar_nav)/launch/config/move_base/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find ucar_nav)/launch/config/move_base/global_costmap_params.yaml" command="load" />
+  </node>
+
+  <!-- rviz -->
+  <group if="$(arg open_rviz)"> 
+    <node pkg="rviz" type="rviz" name="rviz" required="true"
+          args="-d $(find ucar_nav)/rviz/ifly_navigation_dwa_rviz.rviz"/>
+  </group>
+
+</launch>
+
