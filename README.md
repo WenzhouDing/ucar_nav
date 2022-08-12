@@ -1,6 +1,6 @@
 #  使用方法：
 
-1. 将ucar_sim包复制到工作空间src目录下
+1. 将ucar_nav包复制到工作空间src目录下
 
 2. 先catkin_make编译，再 source ~/.bashrc 或 setup.bash
 
