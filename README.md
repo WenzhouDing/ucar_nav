@@ -4,16 +4,20 @@
 
 2. 先catkin_make编译，再 source ~/.bashrc 或 setup.bash
 
-3.  启动导航
+3. 启动导航
+
+   
 
    一键启动仿真下的导航以及gazebo仿真
-   
+
    ```
    roslaunch ucar_nav gazebo_navigation.launch
    ```
+
    
+
    一键启动小车导航（激光雷达，底盘，IMU，摄像头）
-   
+
    ```
    roslaunch ucar_nav ucar_navigation.launch
    ```
